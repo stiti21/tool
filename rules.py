@@ -178,7 +178,7 @@ def main():
     # Fields for CSV output including Source_IP
     fields=[
         "Filename","Subject","From","Return-Path","Authentication-Results",
-        "Message-ID","Date","Source_IP",  # <- added Source_IP column
+        "Message-ID","Date","Source_IP", 
         "Rule1_Status","Rule1_From_Email","Rule1_Return_Email",
         "Rule2_SPF","Rule2_DKIM","Rule2_Result",
         "Rule3_Risk_Score","Rule3_Risk_Level","Rule3_Domain","Rule3_Brand_Impersonation",
