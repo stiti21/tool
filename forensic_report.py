@@ -4,21 +4,17 @@
 import csv, os, argparse, logging, re
 from fpdf import FPDF, XPos, YPos
 
-# CSV field limit for very large emails
 csv.field_size_limit(10_000_000)
 
-# Default input/output
 DEFAULT_INPUT = "/home/kali/tool/csv/detection_results.csv"
 DEFAULT_OUTPUT = "/home/kali/tool/forensic_report_emails.pdf"
 
-# Risk color mapping for PDF
 RISK_COLORS = {
     "High": (200, 0, 0),      # Red
     "Medium": (255, 140, 0),  # Orange
     "Low": (0, 120, 0)        # Green
 }
 
-# Rule weights for scoring
 RULE_WEIGHTS = {
     "Rule1": 20,
     "Rule2": 30,
@@ -30,7 +26,6 @@ RULE_WEIGHTS = {
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ---------- Helpers ----------
 def sanitize(text, limit=4000):
     """Sanitize text to avoid PDF issues and limit size."""
     if not text:
@@ -49,7 +44,6 @@ class PDFReport(FPDF):
         self.set_right_margin(20)
         self.set_auto_page_break(True, margin=15)
 
-        # Add DejaVu font for unicode support
         self.add_font("DejaVu", "", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
         self.add_font("DejaVu", "B", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf")
         self.set_font("DejaVu", "", 11)
