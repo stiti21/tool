@@ -98,7 +98,7 @@ class EmailHeaderExtractor:
 
         except Exception as e:
             print(f"Error processing email: {str(e)}")
-            data = {header: '' for header in self.headers_to_extract}
+            data = {header: '' for header in self.headers_to_extract}  #Creates dictionary with empty headers
             data['Source_IP'] = ''
             data['Body_Text'] = ''
             data['Body_HTML'] = ''
