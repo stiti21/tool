@@ -28,9 +28,9 @@ class EmailHeaderExtractor:
                         if isinstance(part, tuple):
                             bytes_data, encoding = part
                             if encoding:
-                                decoded_parts.append(bytes_data.decode(encoding, errors='ignore'))
+                                decoded_parts.append(bytes_data.decode(encoding, errors='ignore'))  #“Convert bytes into readable text.”
                             else:
-                                decoded_parts.append(bytes_data.decode('utf-8', errors='ignore'))
+                                decoded_parts.append(bytes_data.decode('utf-8', errors='ignore')) #“Guess UTF-8 and decode safely.”
                         else:
                             decoded_parts.append(str(part))
                     return ' '.join(decoded_parts).strip()
