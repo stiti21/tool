@@ -239,64 +239,81 @@ class PhishingDetector:
         mid=str(msg_id or "").strip()
         return {"Rule4_Message_ID":mid,"Rule4_Missing":(mid=="")}
 
-    # Rule 5: Content analysis for suspicious words and link mismatches
-    def rule5_content(self, body_text, body_html):
-        text=(body_text or "")[:200000]; html=(body_html or "")[:200000]
-        URL_RE = re.compile(r"https?://[^\s\"\'<>]+", re.IGNORECASE)
-        def contains_suspicious(txt):
-            for patt in self.SUSPICIOUS_PATTERNS:
-                if patt.search(txt or ""): return True
-            return False
-        def extract_links_from_html(h):
-            links=[]
-            try:
-                soup=BeautifulSoup(h or "", "html.parser")
-                for a in soup.find_all("a", href=True):
-                    visible=a.get_text(strip=True) or ""
-                    actual=a.get("href") or ""
-                    links.append((visible, actual))
-                for img in soup.find_all("img"):
-                    src=(img.get("src") or "").strip()
-                    parent=img.find_parent("a")
-                    href=parent.get("href").strip() if parent and parent.get("href") else src
-                    if href: links.append(("[IMAGE]", href))
-            except Exception: pass
-            return links
-        def extract_links_from_text(t):
-            try: return [(u,u) for u in URL_RE.findall(t or "")]
-            except Exception: return []
-        def check_mismatch(visible, actual):
-            try:
-                v=(visible or "").strip(); a=(actual or "").strip()
-                if not a or v=="[IMAGE]": return False
-                if re.match(r"^https?://", v, re.IGNORECASE): return v.lower()!=a.lower()
-                try:
-                    actual_domain=tldextract.extract(a).registered_domain or ""
-                    visible_domain=tldextract.extract(v).registered_domain or ""
-                    if actual_domain and visible_domain: return actual_domain.lower()!=visible_domain.lower()
-                except Exception: pass
-                return v.lower()!=a.lower()
-            except Exception: return False
+  # Rule 5: Content analysis for suspicious words and link mismatches
+def rule5_content(self, body_text, body_html):
+    text = (body_text or "")[:200000]
+    html = (body_html or "")[:200000]
 
-        suspicious_found=contains_suspicious(text+" "+html)
-        link_mismatch=False
-        links=[]
-        links.extend(extract_links_from_html(html))
-        links.extend(extract_links_from_text(text))
-        for vis, act in links[:200]:
-            if check_mismatch(vis,act):
-                link_mismatch=True
-                break
-        is_phish = suspicious_found or link_mismatch
-        reasons=[]
-        if suspicious_found: reasons.append("suspicious_words")
-        if link_mismatch: reasons.append("link_mismatch")
-        return {
-            "Rule5_Phishing":is_phish,
-            "Rule5_Reasons":" | ".join(reasons) if reasons else "clean",
-            "Rule5_Suspicious_Words":suspicious_found,
-            "Rule5_Link_Mismatch":link_mismatch
-        }
+    URL_RE = re.compile(r"https?://[^\s\"\'<>]+", re.IGNORECASE)
+
+    def contains_suspicious(txt):
+        for patt in self.SUSPICIOUS_PATTERNS:
+            if patt.search(txt or ""):
+                return True
+        return False
+
+    def extract_links_from_html(h):
+        links = []
+        try:
+            soup = BeautifulSoup(h or "", "html.parser")
+            for a in soup.find_all("a", href=True):
+                visible = a.get_text(strip=True) or ""
+                actual = a.get("href") or ""
+                links.append((visible, actual))
+            # تم إزالة كل التعامل مع الصور
+        except Exception:
+            pass
+        return links
+
+    def extract_links_from_text(t):
+        try:
+            return [(u, u) for u in URL_RE.findall(t or "")]
+        except Exception:
+            return []
+
+    def check_mismatch(visible, actual):
+        try:
+            v = (visible or "").strip()
+            a = (actual or "").strip()
+            if not a:
+                return False
+            if re.match(r"^https?://", v, re.IGNORECASE):
+                return v.lower() != a.lower()
+            try:
+                actual_domain = tldextract.extract(a).registered_domain or ""
+                visible_domain = tldextract.extract(v).registered_domain or ""
+                if actual_domain and visible_domain:
+                    return actual_domain.lower() != visible_domain.lower()
+            except Exception:
+                pass
+            return v.lower() != a.lower()
+        except Exception:
+            return False
+
+    suspicious_found = contains_suspicious(text + " " + html)
+    link_mismatch = False
+    links = []
+    links.extend(extract_links_from_html(html))
+    links.extend(extract_links_from_text(text))
+
+    for vis, act in links[:200]:
+        if check_mismatch(vis, act):
+            link_mismatch = True
+            break
+
+    is_phish = suspicious_found or link_mismatch
+    reasons = []
+    if suspicious_found:
+        reasons.append("suspicious_words")
+    if link_mismatch:
+        reasons.append("link_mismatch")
+
+    return {
+        "Rule5_Phishing": is_phish,
+        "Rule5_Reasons": " | ".join(reasons) if reasons else "clean",
+        "Rule5_Suspicious_Words": suspicious_found,
+        "Rule5_Link_Mismatch": link_mismatch
+    }
 
 def main():
     det = PhishingDetector()
