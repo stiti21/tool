@@ -260,7 +260,6 @@ def rule5_content(self, body_text, body_html):
                 visible = a.get_text(strip=True) or ""
                 actual = a.get("href") or ""
                 links.append((visible, actual))
-            # تم إزالة كل التعامل مع الصور
         except Exception:
             pass
         return links
