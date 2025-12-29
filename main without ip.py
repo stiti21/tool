@@ -2,7 +2,6 @@ import email
 import csv
 import os
 import mailbox
-import re
 from email.header import decode_header  
 
 
@@ -182,6 +181,6 @@ class EmailHeaderExtractor:
 
 if __name__ == "__main__":
     extractor = EmailHeaderExtractor()
-    input_dir = "/home/stiti/data"
-    output_file = "/home/stiti/isthistheend/csv/email.csv"
+    input_dir = "/home/kali/tool/email/phishing_pot/email"
+    output_file = "/home/kali/tool/csv/email.csv"
     extractor.process_directory(input_dir, output_file)
