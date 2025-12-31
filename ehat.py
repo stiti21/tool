@@ -53,3 +53,4 @@ os.system("python3 forensic_report.py")
 print("\n[✔] EHAT finished successfully.")
 
 if __name__ == "__main__":
+  main()
