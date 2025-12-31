@@ -2,7 +2,7 @@ import os
 
 def show_banner():
 
-print("\033[91m")
+print("\033[96m")
 
 print(r"""
 
@@ -24,7 +24,7 @@ Phishing Detection & Forensic Analysis
 
 """)
 
-print("\033[0m")
+print("\033[96m")
 
 def main():
 
