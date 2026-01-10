@@ -195,7 +195,6 @@ def render_email(pdf, row, idx):
     safe(pdf, f"From: {row.get('From','')}")
     safe(pdf, f"Subject: {row.get('Subject','(empty)')}")
     safe(pdf, f"Date: {row.get('Date','')}")
-    safe(pdf, f"Source IP: {row.get('Source_IP','(unknown)')}")
     safe(pdf, f"Overall Risk Level: {risk}")
 
     pdf.ln(4)
