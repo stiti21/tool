@@ -240,7 +240,7 @@ class PhishingDetector:
         return {"Rule4_Message_ID":mid,"Rule4_Missing":(mid=="")}
 
   # Rule 5: Content analysis for suspicious words and link mismatches
-def rule5_content(self, body_text, body_html):
+  def rule5_content(self, body_text, body_html):
     text = (body_text or "")[:200000]
     html = (body_html or "")[:200000]
 
@@ -264,12 +264,7 @@ def rule5_content(self, body_text, body_html):
             pass
         return links
 
-    def extract_links_from_text(t):
-        try:
-            return [(u, u) for u in URL_RE.findall(t or "")]
-        except Exception:
-            return []
-
+    
     def check_mismatch(visible, actual):
         try:
             v = (visible or "").strip()
@@ -293,7 +288,7 @@ def rule5_content(self, body_text, body_html):
     link_mismatch = False
     links = []
     links.extend(extract_links_from_html(html))
-    links.extend(extract_links_from_text(text))
+   
 
     for vis, act in links[:200]:
         if check_mismatch(vis, act):
