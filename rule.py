@@ -10,8 +10,8 @@ import tldextract
 from bs4 import BeautifulSoup
 from difflib import SequenceMatcher
 
-INPUT_CSV = "/home/stiti/isthistheend/csv/email.csv"
-OUTPUT_CSV = "/home/stiti/isthistheend/csv/test.csv"
+INPUT_CSV = "/home/kali/tool/csv/email.csv"
+OUTPUT_CSV = "/home/kali/tool/csv/test.csv"
 
 csv.field_size_limit(10000000)
 
@@ -239,75 +239,71 @@ class PhishingDetector:
         mid=str(msg_id or "").strip()
         return {"Rule4_Message_ID":mid,"Rule4_Missing":(mid=="")}
 
-  # Rule 5: Content analysis for suspicious words and link mismatches
-  def rule5_content(self, body_text, body_html):
-    text = (body_text or "")[:200000]
-    html = (body_html or "")[:200000]
+    # Rule 5: Content analysis for suspicious words and link mismatches
+    def rule5_content(self, body_text, body_html):
+        text = (body_text or "")[:200000]
+        html = (body_html or "")[:200000]
 
-    URL_RE = re.compile(r"https?://[^\s\"\'<>]+", re.IGNORECASE)
-
-    def contains_suspicious(txt):
-        for patt in self.SUSPICIOUS_PATTERNS:
-            if patt.search(txt or ""):
-                return True
-        return False
-
-    def extract_links_from_html(h):
-        links = []
-        try:
-            soup = BeautifulSoup(h or "", "html.parser")
-            for a in soup.find_all("a", href=True):
-                visible = a.get_text(strip=True) or ""
-                actual = a.get("href") or ""
-                links.append((visible, actual))
-        except Exception:
-            pass
-        return links
-
-    
-    def check_mismatch(visible, actual):
-        try:
-            v = (visible or "").strip()
-            a = (actual or "").strip()
-            if not a:
-                return False
-            if re.match(r"^https?://", v, re.IGNORECASE):
-                return v.lower() != a.lower()
-            try:
-                actual_domain = tldextract.extract(a).registered_domain or ""
-                visible_domain = tldextract.extract(v).registered_domain or ""
-                if actual_domain and visible_domain:
-                    return actual_domain.lower() != visible_domain.lower()
-            except Exception:
-                pass
-            return v.lower() != a.lower()
-        except Exception:
+        def contains_suspicious(txt):
+            for patt in self.SUSPICIOUS_PATTERNS:
+                if patt.search(txt or ""):
+                    return True
             return False
 
-    suspicious_found = contains_suspicious(text + " " + html)
-    link_mismatch = False
-    links = []
-    links.extend(extract_links_from_html(html))
-   
+        def extract_links_from_html(h):
+            links = []
+            try:
+                soup = BeautifulSoup(h or "", "html.parser")
+                for a in soup.find_all("a", href=True):
+                    visible = a.get_text(strip=True) or ""
+                    actual = a.get("href") or ""
+                    links.append((visible, actual))
+            except Exception:
+                pass
+            return links
 
-    for vis, act in links[:200]:
-        if check_mismatch(vis, act):
-            link_mismatch = True
-            break
+        def check_mismatch(visible, actual):
+            try:
+                v = (visible or "").strip()
+                a = (actual or "").strip()
+                if not a:
+                    return False
+                if re.match(r"^https?://", v, re.IGNORECASE):
+                    return v.lower() != a.lower()
+                try:
+                    actual_domain = tldextract.extract(a).registered_domain or ""
+                    visible_domain = tldextract.extract(v).registered_domain or ""
+                    if actual_domain and visible_domain:
+                        return actual_domain.lower() != visible_domain.lower()
+                except Exception:
+                    pass
+                return v.lower() != a.lower()
+            except Exception:
+                return False
 
-    is_phish = suspicious_found or link_mismatch
-    reasons = []
-    if suspicious_found:
-        reasons.append("suspicious_words")
-    if link_mismatch:
-        reasons.append("link_mismatch")
+        suspicious_found = contains_suspicious(text + " " + html)
+        link_mismatch = False
+        links = []
+        links.extend(extract_links_from_html(html))
 
-    return {
-        "Rule5_Phishing": is_phish,
-        "Rule5_Reasons": " | ".join(reasons) if reasons else "clean",
-        "Rule5_Suspicious_Words": suspicious_found,
-        "Rule5_Link_Mismatch": link_mismatch
-    }
+        for vis, act in links[:200]:
+            if check_mismatch(vis, act):
+                link_mismatch = True
+                break
+
+        is_phish = suspicious_found or link_mismatch
+        reasons = []
+        if suspicious_found:
+            reasons.append("suspicious_words")
+        if link_mismatch:
+            reasons.append("link_mismatch")
+
+        return {
+            "Rule5_Phishing": is_phish,
+            "Rule5_Reasons": " | ".join(reasons) if reasons else "clean",
+            "Rule5_Suspicious_Words": suspicious_found,
+            "Rule5_Link_Mismatch": link_mismatch
+        }
 
 def main():
     det = PhishingDetector()
@@ -317,7 +313,7 @@ def main():
     # Fields for CSV output including Source_IP
     fields=[
         "Filename","Subject","From","Return-Path","Authentication-Results",
-        "Message-ID","Date","Source_IP", 
+        "Message-ID","Date",
         "Rule1_Status","Rule1_From_Email","Rule1_Return_Email",
         "Rule2_SPF","Rule2_DKIM","Rule2_Result",
         "Rule3_Risk_Score","Rule3_Risk_Level","Rule3_Domain","Rule3_Brand_Impersonation",
@@ -341,7 +337,6 @@ def main():
                 filename = row.get("Filename","") or f"row_{idx}"
                 subject = row.get("Subject","")
                 from_h = row.get("From","")
-                source_ip = row.get("Source_IP","")  # <- read Source_IP from CSV
 
                 r1 = det.rule1_from_return(from_h,row.get("Return-Path",""))
                 r2 = det.rule2_auth(row.get("Authentication-Results",""))
@@ -377,7 +372,6 @@ def main():
                     "Authentication-Results":row.get("Authentication-Results",""),
                     "Message-ID":row.get("Message-ID",""),
                     "Date":row.get("Date",""),
-                    "Source_IP": source_ip,  # <- add IP here
                     **r1, **r2, **r3, **r4, **r5,
                     "Total_Risk_Score":risk_score
                 }
