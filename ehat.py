@@ -36,13 +36,13 @@ def main():
     show_banner()
 
     print("[*] Step 1: Extracting email headers & bodies...")
-    run_silently("python3 withoutip.py")
+    run_silently("python3 main.py")
 
     print("[*] Step 2: Running phishing detection rules...")
     run_silently("python3 rule.py")
 
     print("[*] Step 3: Generating forensic PDF report...")
-    run_silently("python3 report.py")
+    run_silently("python3 forensic_report.py")
 
     print("\n[✔] EHAT finished successfully.")
     print(f"All script outputs have been saved to {OUTPUT_LOG}")
